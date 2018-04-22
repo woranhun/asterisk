@@ -9,22 +9,23 @@ RUN mkdir /var/run/sshd && \
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 #Asterisk
-RUN apt-get update&&apt-get install build-essential wget libssl-dev libncurses5-dev libnewt-dev libxml2-dev linux-headers-$(uname -r) libsqlite3-dev uuid-dev git subversion -y
+RUN apt-get update&&apt-get install build-essential wget libssl-dev libncurses5-dev libnewt-dev libxml2-dev linux-headers-$(uname -r) libsqlite3-dev uuid-dev git subversion git  -y
 RUN cd /usr/src && \
 	 wget downloads.asterisk.org/pub/telephony/asterisk/asterisk-13-current.tar.gz && \
-	 tar zxvf asterisk-13-current.tar.gz
-RUN cd asterisk-13* && \
-	git clone git://github.com/asterisk/pjproject pjproject && \
+	 tar zxvf asterisk-13-current.tar.gz && \
+	 rm asterisk*.tar.gz
+RUN cd /usr/src/asterisk-13* && \
+	git clone https://github.com/asterisk/pjproject.git && \
 	cd pjproject && \
 	./configure --prefix=/usr --enable-shared --disable-sound --disable-resample --disable-video --disable-opencore-amr CFLAGS='-O2 -DNDEBUG' && \
 	make dep && \
 	make&&make install && \
 	ldconfig && \
 	ldconfig -p |grep pj
-RUN cd .. && \
-	 contrib/scripts/get_mp3_source.sh && \
-	 contrib/scripts/install_prereq install
-RUN     ./configure && make menuselect && make && make install && \
+RUN cd /usr/src/asterisk* && \
+	 contrib/scripts/get_mp3_source.sh  && \
+	 printf 'y\n36\n' | contrib/scripts/install_prereq install
+RUN ./configure && make menuselect && make && make install && \
 	make samples && \
 	make config && \
 	ldconfig && \
